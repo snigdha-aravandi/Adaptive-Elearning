@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Topics - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-spacing: 0;
+            border-collapse: separate;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .admin-table th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            background: #fcfcfc;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-table td {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .admin-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .breadcrumb {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin/dashboard" class="logo">AdminControl</a>
+            <div class="nav-links">
+                <a href="/logout" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/admin/dashboard">Dashboard</a> / Topics Management
+        </div>
+
+        <div class="page-header">
+            <div>
+                <h1>Curriculum Topics</h1>
+                <p>Define the learning concepts and their prerequisite relationships.</p>
+            </div>
+            <a href="/admin/topics/new" class="btn btn-primary">+ Add New Topic</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        {% if category == 'error' %}
+        <div class="card"
+            style="padding: 1rem; margin-bottom: 1.5rem; border-left: 5px solid #d93025; background: #fce8e6;">
+            <span style="color: #d93025; font-weight: 500;">{{ message }}</span>
+        </div>
+        {% else %}
+        <div class="card"
+            style="padding: 1rem; margin-bottom: 1.5rem; border-left: 5px solid #4caf50; background: #e8f5e9;">
+            <span style="color: #2e7d32; font-weight: 500;">{{ message }}</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th width="80">ID</th>
+                    <th>Topic Name</th>
+                    <th>Prerequisite</th>
+                    <th width="120">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in topics %}
+                <tr>
+                    <td><span style="color: #888; font-family: monospace;">#{{ t.id }}</span></td>
+                    <td><strong>{{ t.name }}</strong></td>
+                    <td>
+                        {% if t.prerequisite %}
+                        <span style="background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">{{
+                            t.prerequisite }}</span>
+                        {% else %}
+                        <span style="color: #ccc;">None</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/admin/topics/edit/{{ t.id }}" class="btn btn-secondary"
+                            style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 6px;">
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+</body>
+
+</html>

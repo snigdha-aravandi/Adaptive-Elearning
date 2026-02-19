@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% if details and details.title %}
+            {{ details.title }} - Learning Content
+        {% else %}
+            {{ topic }} - Learning Content
+        {% endif %}
+    </title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/dashboard" class="logo">AdaptiveLearning</a>
+            <div class="nav-links">
+                <a href="/dashboard" class="btn btn-secondary" style="font-size: 0.9rem;">
+                    &larr; Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" style="margin-top: 2rem;">
+
+        <!-- Topic Header -->
+        <header style="margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 1rem;">
+            <p style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; margin-bottom: 0.5rem;">
+                Current Module
+                {% if details and details.prerequisite %}
+                    &bull; Requires: {{ details.prerequisite }}
+                {% endif %}
+            </p>
+            <h1>
+                {% if details and details.title %}
+                    {{ details.title }}
+                {% else %}
+                    {{ topic }}
+                {% endif %}
+            </h1>
+            <p>Master the concept of {{ topic }} through theory and examples.</p>
+        </header>
+
+        <div class="flex-row" style="align-items: flex-start; gap: 2rem;">
+
+            <!-- Left Column: Primary Instructional Content -->
+            <div style="flex: 2;">
+                
+                <!-- 1. Conceptual Explanation -->
+                <section class="card">
+                    <h2 class="card-title">Concept & Theory</h2>
+                    <div style="line-height: 1.8; white-space: pre-wrap;">{{ content }}</div>
+                </section>
+
+                <!-- 2. Code Example -->
+                {% if details and details.code %}
+                <section class="card" style="margin-top: 1.5rem; background: #fafafa; border-left: 4px solid var(--primary-color);">
+                    <h2 class="card-title">Code Implementation</h2>
+                    <pre style="background: #2d2d2d; color: #f8f8f2; padding: 1.5rem; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; line-height: 1.5;"><code>{{ details.code }}</code></pre>
+                </section>
+                {% endif %}
+
+                <!-- 3. Video Resource -->
+                {% if details and details.video %}
+                <section class="card" style="margin-top: 1.5rem;">
+                    <h2 class="card-title">Video Lecture</h2>
+                    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
+                        <iframe 
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+                            src="{{ details.video }}" 
+                            title="YouTube video player" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </section>
+                {% endif %}
+
+            </div>
+
+            <!-- Right Column: Metadata and Actions -->
+            <div style="flex: 1;">
+                
+                <section class="card">
+                    <h2 class="card-title">Study Actions</h2>
+                    <p style="font-size: 0.9rem; margin-bottom: 1rem;">Test your knowledge once you have reviewed the materials.</p>
+
+                    <a href="/learn/{{ topic }}" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem; text-align: center; display: block;">
+                        Take Assessment
+                    </a>
+
+                    <!-- External References -->
+                    {% if details and details.reference %}
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 1.5rem 0;">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem; color: #555;">External Reference</h3>
+                    <a href="{{ details.reference }}" target="_blank" class="btn btn-secondary" style="width: 100%; text-align: center; display: block; font-size: 0.85rem;">
+                        Official Documentation &rarr;
+                    </a>
+                    {% endif %}
+                </section>
+
+                <!-- Academic Metadata -->
+                <section class="card" style="margin-top: 1.5rem; background: #fdfdfd;">
+                    <h3 style="font-size: 0.85rem; color: #888; text-transform: uppercase;">Module Info</h3>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+                        <strong>Topic:</strong> {{ topic }}<br>
+                        {% if details and details.metadata %}
+                            <strong>Note:</strong> {{ details.metadata }}
+                        {% endif %}
+                    </p>
+                </section>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

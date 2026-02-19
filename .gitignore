@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+instance/
+.pytest_cache/
+database/*.db
+*.log
+reset_questions.py
+create_admin.py
+test_*.py

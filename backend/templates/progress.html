@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Progress - Adaptive E-Learning</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <style>
+        /* Table Styles for Progress List */
+        .progress-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .progress-table th,
+        .progress-table td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .progress-table th {
+            font-weight: 600;
+            color: var(--text-primary);
+            background-color: #f5f5f5;
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge-completed {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .badge-inprogress {
+            background-color: #ddd;
+            color: var(--text-primary);
+        }
+
+        .badge-locked {
+            background-color: #f9f9f9;
+            color: #aaa;
+            border: 1px solid #eee;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/dashboard" class="logo">AdaptiveLearning</a>
+            <div class="nav-links">
+                <a href="/dashboard" class="btn btn-secondary" style="font-size: 0.9rem;">&larr; Back to
+                    Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" style="margin-top: 2rem;">
+
+        <header style="margin-bottom: 2rem;">
+            <h1>My Learning Progress</h1>
+            <p>Detailed breakdown of your mastery in each topic.</p>
+        </header>
+
+        <section class="card">
+            <table class="progress-table">
+                <thead>
+                    <tr>
+                        <th>Topic Name</th>
+                        <th>Status</th>
+                        <th>Mastery Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Topic 1: Variables -->
+                    <tr>
+                        <td><strong>Variables</strong></td>
+                        <td><span class="badge badge-completed">Completed</span></td>
+                        <td>85%</td>
+                    </tr>
+
+                    <!-- Topic 2: Conditions -->
+                    <tr>
+                        <td><strong>Conditions</strong></td>
+                        <td><span class="badge badge-inprogress">In Progress</span></td>
+                        <td>45%</td>
+                    </tr>
+
+                    <!-- Topic 3: Loops -->
+                    <tr>
+                        <td><strong>Loops</strong></td>
+                        <td><span class="badge badge-locked">Locked</span></td>
+                        <td>0%</td>
+                    </tr>
+
+                    <!-- Topic 4: Functions -->
+                    <tr>
+                        <td><strong>Functions</strong></td>
+                        <td><span class="badge badge-locked">Locked</span></td>
+                        <td>0%</td>
+                    </tr>
+
+                    <!-- Topic 5: Recursion -->
+                    <tr>
+                        <td><strong>Recursion</strong></td>
+                        <td><span class="badge badge-locked">Locked</span></td>
+                        <td>0%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+    </div>
+
+</body>
+
+</html>

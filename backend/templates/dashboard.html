@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Adaptive E-Learning System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <!-- Professional Navbar -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/dashboard" class="logo">Adaptive Learning System</a>
+            <div class="nav-links">
+                {% if session.get('role') == 'admin' %}
+                <a href="/admin/dashboard">Admin Console</a>
+                {% endif %}
+                <a href="/logout">Sign Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+            <h1>Student Dashboard</h1>
+            <p style="margin: 0;">Overview of learning progress and competency acquisition.</p>
+        </div>
+
+        <div class="dashboard-layout">
+
+            <!-- LEFT COLUMN: Actionable Content & Stats -->
+            <div class="main-content">
+
+                <!-- 1. Recommendation Engine -->
+                <section class="card" style="border-left: 4px solid var(--primary-color);">
+                    <div class="card-header">
+                        <h2 class="card-title">Current Recommendation</h2>
+                    </div>
+
+                    <div style="padding: 0.5rem 0;">
+                        <span class="badge badge-info">Adaptive Suggestion</span>
+                        <h3 id="recTopic" style="font-size: 1.8rem; margin: 0.8rem 0; color: var(--primary-color);">
+                            Loading...</h3>
+                        <p id="recExplanation" style="color: var(--text-main);">Retrieving your personalized learning
+                            step...</p>
+
+                        <!-- ML Explainability Hint -->
+                        <p style="font-size: 0.85rem; color: var(--text-muted); font-style: italic; margin-top: 1rem;">
+                            * Recommendation generated based on your recent mastery checks and consistency scores.
+                        </p>
+                    </div>
+
+                    <button id="btnStartLearning" class="btn btn-primary btn-block" style="max-width: 200px;">
+                        Start Module
+                    </button>
+                </section>
+
+                <!-- 2. Performance Metrics -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Performance Metrics</h2>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="statAttempts">-</div>
+                            <div class="stat-label">Total Attempts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statDiff">-</div>
+                            <div class="stat-label">Max Difficulty</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statAvgTime">-</div>
+                            <div class="stat-label">Avg Time (Sec)</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. System Logic Explanation (Academic Requirement) -->
+                <section class="card" style="background-color: #f8f9fa;">
+                    <div class="card-header">
+                        <h2 class="card-title">Adaptive Logic</h2>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-muted);">
+                        <p>This system utilizes a <strong>Competency Graph</strong> to govern your progression:</p>
+                        <ul style="padding-left: 1.5rem; margin-bottom: 0;">
+                            <li><strong>Prerequisites:</strong> Topics unlock sequentially derived from dependency
+                                rules.</li>
+                            <li><strong>Mastery Threshold:</strong> A score of <strong
+                                    style="color: var(--text-main);">70%</strong> is required to verify competency.</li>
+                            <li><strong>Dynamic Difficulty:</strong> Content adapts (Easy/Medium/Hard) based on
+                                real-time readiness analysis.</li>
+                        </ul>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Learning Path Visualization -->
+            <div class="sidebar">
+                <section class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Competency Path</h2>
+                    </div>
+                    <div id="pathContainer">
+                        <p style="text-align: center; padding: 1rem;">Loading path...</p>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Topic Mastery</h2>
+                    </div>
+                    <div id="masteryList" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Generated via JS -->
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Frontend Logic -->
+    <script>
+        async function loadDashboard() {
+            try {
+                // Fetch Recommendation
+                const recRes = await fetch("/recommendation");
+                if (recRes.status === 401) { window.location.href = "/login"; return; }
+                const recData = await recRes.json();
+
+                // Update UI: Recommendation
+                const rec = recData.recommendation;
+                document.getElementById("recTopic").innerText = rec.topic;
+                document.getElementById("recExplanation").innerText = rec.explanation;
+
+                document.getElementById("btnStartLearning").onclick = () => {
+                    window.location.href = `/content/${encodeURIComponent(rec.topic)}`;
+                };
+
+                // Update UI: Mastery List (Sidebar)
+                const masteryList = document.getElementById("masteryList");
+                masteryList.innerHTML = "";
+                for (const [topic, val] of Object.entries(recData.student_mastery)) {
+                    const pct = Math.round(val * 100);
+                    const item = document.createElement("div");
+                    item.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:0.2rem;">
+                            <span>${topic}</span>
+                            <strong>${pct}%</strong>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-fill" style="width: ${pct}%;"></div>
+                        </div>
+                    `;
+                    masteryList.appendChild(item);
+                }
+
+                // Fetch & Render Learning Path
+                const pathRes = await fetch("/learning-path");
+                const pathNodes = await pathRes.json();
+                const pathContainer = document.getElementById("pathContainer");
+                pathContainer.innerHTML = "";
+
+                pathNodes.forEach(node => {
+                    let badgeClass = "badge-secondary";
+                    let badgeText = node.status;
+                    let styleOpacity = "1";
+                    let borderColor = "var(--border-color)";
+
+                    if (node.status === "completed") {
+                        badgeClass = "badge-success";
+                        borderColor = "var(--success-color)";
+                    } else if (node.status === "current") {
+                        badgeClass = "badge-info";
+                        borderColor = "var(--primary-color)";
+                    } else if (node.status === "locked") {
+                        badgeClass = "badge-normal";
+                        styleOpacity = "0.5";
+                    }
+
+                    const nodeDiv = document.createElement("div");
+                    nodeDiv.style.cssText = `padding: 0.8rem; border: 1px solid ${borderColor}; border-radius: 4px; margin-bottom: 0.8rem; opacity: ${styleOpacity}; background: #fff;`;
+
+                    nodeDiv.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.4rem;">
+                            <strong style="font-size:0.95rem;">${node.topic}</strong>
+                            <span class="badge ${badgeClass}" style="font-size:0.7rem;">${badgeText}</span>
+                        </div>
+                        <div class="progress-container" style="height: 4px;">
+                             <div class="progress-fill" style="width: ${Math.round(node.mastery * 100)}%;"></div>
+                        </div>
+                    `;
+                    pathContainer.appendChild(nodeDiv);
+                });
+
+                // Fetch Analytics Stats
+                const statsRes = await fetch("/student-analytics");
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    document.getElementById("statAttempts").innerText = stats.total_attempts;
+                    document.getElementById("statAvgTime").innerText = Math.round(stats.total_time_minutes > 0 ? (stats.total_time_minutes * 60 / stats.total_attempts) : 0);
+                    document.getElementById("statDiff").innerText = stats.highest_difficulty || "N/A";
+                }
+
+            } catch (err) {
+                console.error("Dashboard Error:", err);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadDashboard);
+    </script>
+</body>
+
+</html>

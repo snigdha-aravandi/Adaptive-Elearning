@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Bank - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .topic-section {
+            margin-bottom: 4rem;
+        }
+
+        .topic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--accent-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-spacing: 0;
+            border-collapse: separate;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .admin-table th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            background: #fcfcfc;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-table td {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        .admin-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .badge {
+            padding: 2px 10px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-easy {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-medium {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .badge-hard {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .type-label {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .breadcrumb {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin/dashboard" class="logo">AdminControl</a>
+            <div class="nav-links">
+                <a href="/logout" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/admin/dashboard">Dashboard</a> / Assessment Bank
+        </div>
+
+        <header style="margin-bottom: 3rem;">
+            <h1>Quiz Question Bank</h1>
+            <p>Maintain the pool of diverse questions for adaptive assessments.</p>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        {% if category == 'error' %}
+        <div class="card"
+            style="padding: 1rem; margin-bottom: 1.5rem; border-left: 5px solid #d93025; background: #fce8e6;">
+            <span style="color: #d93025; font-weight: 500;">{{ message }}</span>
+        </div>
+        {% else %}
+        <div class="card"
+            style="padding: 1rem; margin-bottom: 1.5rem; border-left: 5px solid #4caf50; background: #e8f5e9;">
+            <span style="color: #2e7d32; font-weight: 500;">{{ message }}</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% for topic_name, data in grouped_questions.items() %}
+        <div class="topic-section">
+            <div class="topic-header">
+                <h2 style="margin-bottom: 0;">{{ topic_name }}</h2>
+                <a href="/admin/questions/new/{{ data.id }}" class="btn btn-primary"
+                    style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                    + Add Question
+                </a>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th width="80">ID</th>
+                        <th>Question Snippet</th>
+                        <th width="120">Type</th>
+                        <th width="120">Difficulty</th>
+                        <th width="100">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if data.questions %}
+                    {% for q in data.questions %}
+                    <tr>
+                        <td><span style="color: #888; font-family: monospace;">#{{ q.id }}</span></td>
+                        <td>
+                            <div
+                                style="max-height: 4.5em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;">
+                                {{ q.question }}
+                            </div>
+                        </td>
+                        <td><span class="type-label">{{ q.question_type|upper }}</span></td>
+                        <td>
+                            {% if q.difficulty == 1 %}<span class="badge badge-easy">Easy</span>
+                            {% elif q.difficulty == 2 %}<span class="badge badge-medium">Medium</span>
+                            {% elif q.difficulty == 3 %}<span class="badge badge-hard">Hard</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/admin/questions/edit/{{ q.id }}" class="btn btn-secondary"
+                                style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 6px;">
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #999; padding: 3rem;">
+                            No questions available for this module yet.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</body>
+
+</html>

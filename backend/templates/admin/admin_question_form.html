@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Question - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .form-container {
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb {
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .helper-text {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .option-group {
+            background-color: #fcfcfc;
+            border: 1px dashed var(--border-color);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+        }
+
+        .option-input-grid {
+            display: grid;
+            grid-template-columns: 35px 1fr;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.75rem;
+        }
+
+        .option-prefix {
+            font-weight: 800;
+            color: var(--text-secondary);
+            font-family: monospace;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin/dashboard" class="logo">AdminControl</a>
+            <div class="nav-links">
+                <a href="/logout" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/admin/dashboard">Dashboard</a> / <a href="/admin/questions">Bank</a> / {{ 'Edit' if question else
+            'New' }}
+        </div>
+
+        <div class="form-container">
+            <header style="margin-bottom: 2.5rem;">
+                <h1>{{ 'Edit Question' if question else 'Add New Question' }}</h1>
+                <p>Curriculum Module: <span style="font-weight: 800; color: #000;">{{ topic.name }}</span></p>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if category == 'error' %}
+            <div class="card"
+                style="padding: 1rem; margin-bottom: 1.5rem; border-left: 5px solid #d93025; background: #fce8e6;">
+                <span style="color: #d93025; font-weight: 500;">{{ message }}</span>
+            </div>
+            {% else %}
+            <div class="card"
+                style="padding: 1rem; margin-bottom: 1.5rem; border-left: 5px solid #4caf50; background: #e8f5e9;">
+                <span style="color: #2e7d32; font-weight: 500;">{{ message }}</span>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="card">
+
+                <div class="form-group">
+                    <label class="form-label">Question Text / Code Snippet</label>
+                    <textarea name="question" class="form-input" rows="5" required
+                        placeholder="What is the result of... or enter code sample here.">{{ question.question if question else '' }}</textarea>
+                    <span class="helper-text">For Code Output questions, paste the code sample here.</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Evaluation Logic</label>
+                        <select name="question_type" id="q_type" class="form-input" style="appearance: auto;"
+                            onchange="toggleOptions()">
+                            <option value="mcq" {{ 'selected' if question and question.question_type=='mcq' else '' }}>
+                                Multiple Choice (MCQ)</option>
+                            <option value="code" {{ 'selected' if question and question.question_type=='code' else ''
+                                }}>Expected Code Output</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Adaptive Difficulty</label>
+                        <select name="difficulty" class="form-input" style="appearance: auto;">
+                            <option value="1" {{ 'selected' if question and question.difficulty==1 else '' }}>🟢 Easy
+                                (Foundation)</option>
+                            <option value="2" {{ 'selected' if question and question.difficulty==2 else '' }}>🟡 Medium
+                                (Applied)</option>
+                            <option value="3" {{ 'selected' if question and question.difficulty==3 else '' }}>🔴 Hard
+                                (Advanced)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="mcq_options" class="option-group">
+                    <label class="form-label" style="margin-bottom: 1rem;">Set Multiple Choice Options</label>
+
+                    <div class="option-input-grid">
+                        <div class="option-prefix">A</div>
+                        <input type="text" name="option_a" class="form-input"
+                            value="{{ question.option_a if question else '' }}" placeholder="Option A text">
+                    </div>
+                    <div class="option-input-grid">
+                        <div class="option-prefix">B</div>
+                        <input type="text" name="option_b" class="form-input"
+                            value="{{ question.option_b if question else '' }}" placeholder="Option B text">
+                    </div>
+                    <div class="option-input-grid">
+                        <div class="option-prefix">C</div>
+                        <input type="text" name="option_c" class="form-input"
+                            value="{{ question.option_c if question else '' }}" placeholder="Option C text (optional)">
+                    </div>
+                    <div class="option-input-grid">
+                        <div class="option-prefix">D</div>
+                        <input type="text" name="option_d" class="form-input"
+                            value="{{ question.option_d if question else '' }}" placeholder="Option D text (optional)">
+                    </div>
+                    <span class="helper-text">Students will be presented with these options in a randomized
+                        order.</span>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 2.5rem;">
+                    <label class="form-label" id="correct_label">Correct Validation Token</label>
+                    <input type="text" name="correct_answer" class="form-input"
+                        value="{{ question.correct_answer if question else '' }}" required
+                        placeholder="Match an option or provide output token">
+                    <span class="helper-text" id="correct_hint">For MCQ, this must EXACTLY match the text of the correct
+                        option.</span>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">
+                        {{ 'Finalize & Save Question' if question else 'Add to Question Bank' }}
+                    </button>
+                    <a href="/admin/questions" class="btn btn-secondary" style="flex: 1;">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleOptions() {
+            var type = document.getElementById('q_type').value;
+            var opts = document.getElementById('mcq_options');
+            var hint = document.getElementById('correct_hint');
+            var label = document.getElementById('correct_label');
+
+            if (type === 'code') {
+                opts.style.display = 'none';
+                hint.innerText = 'Students must type this exact string in the assessment. Case-sensitive check applies.';
+                label.innerHTML = 'Expected Output Token';
+            } else {
+                opts.style.display = 'block';
+                hint.innerText = 'This must EXACTLY match the character sequence of the correct option above.';
+                label.innerHTML = 'Correct Option Match';
+            }
+        }
+        // Initialize on load
+        toggleOptions();
+    </script>
+</body>
+
+</html>

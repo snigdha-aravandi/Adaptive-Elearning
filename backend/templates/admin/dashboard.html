@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Adaptive Learning System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .admin-nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .nav-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            height: 100%;
+        }
+
+        .nav-card h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-card p {
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin/dashboard" class="logo">AdminControl</a>
+            <div class="nav-links">
+                <a href="/dashboard" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Student View
+                </a>
+                <a href="/logout" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <header class="header-actions">
+            <div>
+                <h1>System Overview</h1>
+                <p>Monitor platform performance and manage core learning modules.</p>
+            </div>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="card stat-card">
+                <div class="stat-label">Active Users</div>
+                <div class="stat-value">{{ stats.users }}</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-label">Learning Topics</div>
+                <div class="stat-value">{{ stats.topics }}</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-label">Banked Questions</div>
+                <div class="stat-value">{{ stats.questions }}</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-label">Quiz Attempts</div>
+                <div class="stat-value">{{ stats.attempts }}</div>
+            </div>
+        </div>
+
+        <h2>Management Modules</h2>
+        <div class="admin-nav-grid">
+
+
+
+            <!-- Student Comparison -->
+            <div class="card nav-card">
+                <div>
+                    <h3>Path Differentiation</h3>
+                    <p>Compare two students side-by-side to visualize their unique learning paths and performance
+                        metrics.</p>
+                </div>
+                <a href="/admin/compare" class="btn btn-primary" style="width: 100%;">Compare Students</a>
+            </div>
+
+            <!-- Question Manager -->
+            <div class="card nav-card">
+                <div>
+                    <h3>Question Manager</h3>
+                    <p>Add new questions or update existing ones. Deletion is restricted to maintain a pool of at least
+                        5 questions per topic.</p>
+                </div>
+                <a href="/admin/questions" class="btn btn-primary" style="width: 100%;">Manage Questions</a>
+            </div>
+
+            <!-- Content Manager -->
+            <div class="card nav-card">
+                <div>
+                    <h3>Content Manager</h3>
+                    <p>Update explanatory text and learning materials for each topic to ensure content quality.</p>
+                </div>
+                <a href="/admin/content" class="btn btn-primary" style="width: 100%;">Manage Content</a>
+            </div>
+
+            <!-- Integrity Dashboard -->
+            <div class="card nav-card">
+                <div>
+                    <h3>Integrity Dashboard</h3>
+                    <p>Monitor the health of the question bank and ensure all topics meet academic standards.</p>
+                </div>
+                <a href="/admin/integrity" class="btn btn-primary" style="width: 100%;">View Integrity</a>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

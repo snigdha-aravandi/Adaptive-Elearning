@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Topic - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb {
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .selection-hint {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 5px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin/dashboard" class="logo">AdminControl</a>
+            <div class="nav-links">
+                <a href="/logout" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/admin/dashboard">Dashboard</a> / <a href="/admin/topics">Topics</a> / {{ 'Edit' if topic else
+            'New' }}
+        </div>
+
+        <div class="form-container">
+            <header style="margin-bottom: 2rem;">
+                <h1>{{ 'Edit Topic' if topic else 'Create New Topic' }}</h1>
+                <p>Define the concept name and its place in the curriculum graph.</p>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if category == 'error' %}
+            <div class="card"
+                style="padding: 1rem; margin-bottom: 1.5rem; border-left: 5px solid #d93025; background: #fce8e6;">
+                <span style="color: #d93025; font-weight: 500;">{{ message }}</span>
+            </div>
+            {% else %}
+            <div class="card"
+                style="padding: 1rem; margin-bottom: 1.5rem; border-left: 5px solid #4caf50; background: #e8f5e9;">
+                <span style="color: #2e7d32; font-weight: 500;">{{ message }}</span>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="card">
+                <div class="form-group">
+                    <label class="form-label">Topic Name</label>
+                    <input type="text" name="name" class="form-input" placeholder="e.g. Recursion"
+                        value="{{ topic.name if topic else '' }}" required>
+                    <span class="selection-hint">This name will be visible to students on their dashboard.</span>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label class="form-label">Prerequisite (Dependency)</label>
+                    <select name="prerequisite_id" class="form-input" style="appearance: auto;">
+                        <option value="">None (Entry Point Topic)</option>
+                        {% for t in topics %}
+                        <option value="{{ t.id }}" {{ 'selected' if topic and topic.prerequisite_id==t.id else '' }}>
+                            {{ t.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <span class="selection-hint">Students must master at least 70% of the prerequisite before this topic
+                        unlocks.</span>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">
+                        {{ 'Update Topic' if topic else 'Create Topic' }}
+                    </button>
+                    <a href="/admin/topics" class="btn btn-secondary" style="flex: 1;">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

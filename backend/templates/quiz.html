@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ topic }} - Assessment</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .state-container {
+            display: none;
+        }
+
+        .state-active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .quiz-card {
+            margin-bottom: 2rem;
+        }
+
+        .option-label {
+            display: block;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .option-label:hover {
+            background: #f9f9f9;
+        }
+
+        .option-label input {
+            margin-right: 10px;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+        }
+
+        #error-msg {
+            color: #d93025;
+            background: #fce8e6;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/dashboard" class="logo">AdaptiveLearning</a>
+            <div class="nav-links">
+                <span id="nav-topic" style="font-weight: 500; color: #555;">{{ topic }} Assessment</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 3rem; max-width: 800px;">
+
+        <div id="error-msg"></div>
+
+        <!-- 1. SETUP STATE: Difficulty Selection -->
+        <div id="state-setup" class="state-container state-active card">
+            <h2>Ready to start?</h2>
+            <p>Select a difficulty level to begin your assessment for <b>{{ topic }}</b>.</p>
+
+            <div style="margin: 2rem 0;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Difficulty Level:</label>
+                <select id="difficulty-select"
+                    style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem;">
+                    <option value="easy">Easy (Entry Level)</option>
+                    <option value="medium">Medium (Intermediate)</option>
+                    <option value="hard">Hard (Advanced Specialist)</option>
+                </select>
+                <p style="font-size: 0.85rem; color: #666; margin-top: 8px;">
+                    Note: Higher difficulty levels unlock higher mastery potential.
+                </p>
+            </div>
+
+            <button id="btn-start" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 14px;">
+                Start Quiz
+            </button>
+        </div>
+
+        <!-- 2. LOADING STATE -->
+        <div id="state-loading" class="state-container card" style="text-align: center;">
+            <div class="loading-spinner"></div>
+            <p>Preparing your customized assessment...</p>
+        </div>
+
+        <!-- 3. QUIZ STATE: Questions -->
+        <div id="state-quiz" class="state-container">
+            <form id="quizForm">
+                <div id="questions-container"></div>
+                <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 1.5rem;">
+                    <button type="submit" id="btn-submit" class="btn btn-primary"
+                        style="width: 100%; font-size: 1.1rem; padding: 14px;">
+                        Submit Assessment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 4. RESULT STATE -->
+        <div id="state-results" class="state-container card">
+            <div class="results-header">
+                <h2>Assessment Complete!</h2>
+                <div class="score-display"><span id="res-percent">0</span>%</div>
+                <p id="res-count-text">You answered 0 out of 0 questions correctly.</p>
+            </div>
+
+            <div
+                style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 5px solid var(--primary-color);">
+                <h4 style="margin-top: 0; color: #333;">Adaptive Summary:</h4>
+                <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8;">
+                    <li><b>Difficulty Level:</b> <span id="res-difficulty" style="text-transform: capitalize;">-</span>
+                    </li>
+                    <li><b>Mastery Cap:</b> <span id="res-cap">-</span></li>
+                    <li><b>Updated Competency:</b> <span id="res-mastery">-</span></li>
+                </ul>
+                <hr style="border: 0; border-top: 1px solid #ddd; margin: 1rem 0;">
+                <p id="mastery-msg" style="margin: 0; line-height: 1.5; color: #444;"></p>
+            </div>
+
+            <a href="/dashboard" class="btn btn-secondary"
+                style="display: block; text-align: center; font-size: 1.1rem; padding: 14px;">
+                Return to Dashboard
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        const topicName = "{{ topic }}";
+        const suggestedDifficulty = "{{ suggested_difficulty }}"; // ML-based recommendation
+        let currentAttemptId = null;
+        let selectedDifficulty = null;
+
+        // Set ML-suggested difficulty as default
+        if (suggestedDifficulty) {
+            document.getElementById('difficulty-select').value = suggestedDifficulty;
+        }
+
+        // 0. CHECK AVAILABILITY (New)
+        async function checkAvailability() {
+            try {
+                const response = await fetch(`/quiz/availability/${topicName}`);
+                if (!response.ok) return; // Silent fail if backend update missing
+
+                const data = await response.json();
+                const select = document.getElementById('difficulty-select');
+
+                let currentValid = true;
+
+                for (const [level, info] of Object.entries(data)) {
+                    const option = select.querySelector(`option[value="${level}"]`);
+                    if (option) {
+                        if (info.status === 'unavailable') {
+                            option.disabled = true;
+                            option.innerHTML += ` (Insufficient Questions: ${info.available_count}/${info.required})`;
+                            if (select.value === level) currentValid = false;
+                        } else {
+                            option.disabled = false;
+                            // Clean previous status if re-enabled
+                            option.innerHTML = option.innerHTML.split(' (')[0];
+                        }
+                    }
+                }
+
+                // If selected option became invalid, switch to first valid or disable start
+                if (!currentValid) {
+                    const validOption = select.querySelector('option:not([disabled])');
+                    const btnStart = document.getElementById('btn-start');
+
+                    if (validOption) {
+                        select.value = validOption.value;
+                    } else {
+                        btnStart.disabled = true;
+                        btnStart.innerText = "No Assessments Available";
+                        showError("There are no questions available for this topic. Please contact your instructor.", true);
+                    }
+                }
+
+            } catch (e) {
+                console.error("Availability check failed:", e);
+            }
+        }
+
+        // Run immediately
+        checkAvailability();
+
+        // UI Helpers
+        function showState(stateId) {
+            document.querySelectorAll('.state-container').forEach(el => el.classList.remove('state-active'));
+            document.getElementById(stateId).classList.add('state-active');
+            window.scrollTo(0, 0);
+        }
+
+        function showError(msg, isAdminAction = false) {
+            const err = document.getElementById('error-msg');
+            if (isAdminAction) {
+                err.innerHTML = `<strong>Attention Required:</strong> ${msg}<br><small>If you are an administrator, please ensure questions exist for this topic and difficulty level in the management panel.</small>`;
+            } else {
+                err.innerText = msg;
+            }
+            err.style.display = 'block';
+            setTimeout(() => { err.style.display = 'none'; }, 8000);
+        }
+
+        // 1. START QUIZ
+        document.getElementById('btn-start').addEventListener('click', async () => {
+            selectedDifficulty = document.getElementById('difficulty-select').value;
+
+            showState('state-loading');
+
+            try {
+                const response = await fetch('/quiz/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic: topicName, difficulty: selectedDifficulty })
+                });
+
+                const data = await response.json();
+
+                // HANDLE INSUFFICIENT QUESTIONS SPECIFICALLY
+                if (response.status === 400 && data.status === "INSUFFICIENT_QUESTIONS") {
+                    showState('state-setup');
+                    showError(
+                        `<b>Assessment Unavailable for ${selectedDifficulty} Difficulty</b><br>` +
+                        `There are not enough unique questions remaining for this difficulty level. ` +
+                        `Please select a different difficulty or contact the instructor to expand the question bank.`
+                        , true);
+                    return;
+                }
+
+                if (!response.ok) throw new Error(data.error || 'Failed to start quiz');
+
+                if (!data.questions || data.questions.length === 0) {
+                    showState('state-setup');
+                    showError("No valid assessment data found. Please contact support.", true);
+                    return;
+                }
+
+                currentAttemptId = data.attempt_id;
+                const container = document.getElementById('questions-container');
+                container.innerHTML = ''; // Explicit clear
+                renderQuestions(data.questions);
+                showState('state-quiz');
+
+            } catch (err) {
+                console.error(err);
+                showState('state-setup');
+                showError("Network Error: " + err.message);
+            }
+        });
+
+        // 2. RENDER QUESTIONS
+        function renderQuestions(questions) {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'card quiz-card';
+
+                let html = `<h3>Question ${index + 1}</h3>`;
+
+                if (q.question_type === 'mcq') {
+                    html += `<p style="font-size: 1.1rem; margin-bottom: 1.5rem;">${q.question}</p>`;
+                    ['option_a', 'option_b', 'option_c', 'option_d'].forEach(key => {
+                        if (q[key]) {
+                            html += `
+                                <label class="option-label">
+                                    <input type="radio" name="q_${q.id}" value="${q[key]}" required>
+                                    ${q[key]}
+                                </label>
+                            `;
+                        }
+                    });
+                } else if (q.question_type === 'code') {
+                    html += `<p>Predict the exact output of this code snippet:</p>`;
+                    html += `<div class="code-block">${q.question}</div>`;
+                    html += `
+                        <input type="text" name="q_${q.id}" required placeholder="Type output here..." 
+                               style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem;">
+                    `;
+                }
+
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+        }
+
+        // 3. SUBMIT QUIZ
+        document.getElementById('quizForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btnSubmit = document.getElementById('btn-submit');
+            if (btnSubmit.disabled) return; // Prevent double click
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "Submitting Evaluation...";
+
+            const formData = new FormData(e.target);
+            const responses = [];
+
+            for (let [name, value] of formData.entries()) {
+                const qId = parseInt(name.replace('q_', ''));
+                responses.push({ question_id: qId, selected: value });
+            }
+
+            try {
+                const response = await fetch('/quiz/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        attempt_id: currentAttemptId,
+                        responses: responses
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to evaluate quiz');
+
+                // Update Transparency Details
+                document.getElementById('res-percent').innerText = Math.round(data.score);
+                document.getElementById('res-count-text').innerText = `You answered ${data.correct} out of ${data.total} questions correctly.`;
+                document.getElementById('res-difficulty').innerText = selectedDifficulty;
+
+                // Mappings for transparency
+                const caps = { "easy": "50%", "medium": "80%", "hard": "100%" };
+                document.getElementById('res-cap').innerText = `Max ${caps[selectedDifficulty]} for this difficulty`;
+                document.getElementById('res-mastery').innerText = `${Math.round(data.new_mastery * 100)}% Overall`;
+
+                // Achievement Message
+                let msg = "";
+                if (data.score === 100) {
+                    msg = "Perfect score! Your mastery has been updated to the highest level possible for this difficulty.";
+                } else if (data.score >= 70) {
+                    msg = "Well done! You have passed the benchmark for this assessment.";
+                } else {
+                    msg = "Keep practicing. We recommend reviewing the learning materials before retrying.";
+                }
+
+                document.getElementById('mastery-msg').innerText = msg;
+                showState('state-results');
+
+            } catch (err) {
+                console.error(err);
+                showError("Submission Error: " + err.message);
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Submit Assessment";
+            }
+        });
+    </script>
+</body>
+
+</html>

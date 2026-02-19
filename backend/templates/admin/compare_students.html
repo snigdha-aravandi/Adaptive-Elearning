@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Students - Admin Panel</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .student-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        select {
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            min-width: 200px;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .mastery-item {
+            margin-top: 1rem;
+        }
+
+        .progress-bar {
+            background-color: #eee;
+            border-radius: 4px;
+            height: 8px;
+            width: 100%;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background-color: var(--accent-color);
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin/dashboard" class="logo">AdminControl</a>
+            <div class="nav-links">
+                <a href="/admin/dashboard" class="btn btn-secondary"
+                    style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Back to Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Student Comparison Tool</h1>
+        <p>Analyze performance differences between two students to visualize adaptive path branching.</p>
+
+        <form method="GET" action="/admin/compare" class="student-selector">
+            <div class="form-group">
+                <label>Student 1</label>
+                <select name="sid1">
+                    <option value="">Select Student...</option>
+                    {% for s in students %}
+                    <option value="{{ s.id }}" {% if request.args.get('sid1')==s.id|string %}selected{% endif %}>{{
+                        s.name }} ({{ s.email }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;">VS</div>
+            <div class="form-group">
+                <label>Student 2</label>
+                <select name="sid2">
+                    <option value="">Select Student...</option>
+                    {% for s in students %}
+                    <option value="{{ s.id }}" {% if request.args.get('sid2')==s.id|string %}selected{% endif %}>{{
+                        s.name }} ({{ s.email }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Compare Now</button>
+        </form>
+
+        <div class="compare-grid">
+            <!-- Student 1 Data -->
+            <div class="card">
+                {% if data1 %}
+                <h2 style="color: var(--primary-color);">{{ data1.user_info.name }}</h2>
+                <div class="metric-row"><span class="metric-label">Current Topic:</span> <span class="metric-value">{{
+                        data1.current_topic }}</span></div>
+                <div class="metric-row"><span class="metric-label">Total Attempts:</span> <span class="metric-value">{{
+                        data1.total_attempts }}</span></div>
+                <div class="metric-row"><span class="metric-label">Time Spent (Min):</span> <span
+                        class="metric-value">{{ data1.total_time_minutes }}</span></div>
+                <div class="metric-row"><span class="metric-label">Avg Time/Q:</span> <span class="metric-value">{{
+                        data1.avg_time_per_question }}s</span></div>
+                <div class="metric-row"><span class="metric-label">Highest Difficulty:</span> <span class="metric-value"
+                        style="text-transform: capitalize;">{{ data1.highest_difficulty }}</span></div>
+
+                <h3 style="margin-top: 2rem;">Topic Mastery</h3>
+                {% for topic, val in data1.topic_mastery.items() %}
+                <div class="mastery-item">
+                    <div style="display:flex; justify-content:space-between; font-size: 0.85rem;">
+                        <span>{{ topic }}</span>
+                        <span>{{ (val * 100)|round|int }}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width:{{ (val * 100)|round|int }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p style="text-align: center; color: #888; padding: 2rem;">Choose a student to compare.</p>
+                {% endif %}
+            </div>
+
+            <!-- Student 2 Data -->
+            <div class="card">
+                {% if data2 %}
+                <h2 style="color: var(--primary-color);">{{ data2.user_info.name }}</h2>
+                <div class="metric-row"><span class="metric-label">Current Topic:</span> <span class="metric-value">{{
+                        data2.current_topic }}</span></div>
+                <div class="metric-row"><span class="metric-label">Total Attempts:</span> <span class="metric-value">{{
+                        data2.total_attempts }}</span></div>
+                <div class="metric-row"><span class="metric-label">Time Spent (Min):</span> <span
+                        class="metric-value">{{ data2.total_time_minutes }}</span></div>
+                <div class="metric-row"><span class="metric-label">Avg Time/Q:</span> <span class="metric-value">{{
+                        data2.avg_time_per_question }}s</span></div>
+                <div class="metric-row"><span class="metric-label">Highest Difficulty:</span> <span class="metric-value"
+                        style="text-transform: capitalize;">{{ data2.highest_difficulty }}</span></div>
+
+                <h3 style="margin-top: 2rem;">Topic Mastery</h3>
+                {% for topic, val in data2.topic_mastery.items() %}
+                <div class="mastery-item">
+                    <div style="display:flex; justify-content:space-between; font-size: 0.85rem;">
+                        <span>{{ topic }}</span>
+                        <span>{{ (val * 100)|round|int }}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width:{{ (val * 100)|round|int }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p style="text-align: center; color: #888; padding: 2rem;">Choose a student to compare.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

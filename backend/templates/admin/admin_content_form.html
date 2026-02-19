@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Content - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .form-container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb {
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .helper-text {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 5px;
+            display: block;
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin/dashboard" class="logo">AdminControl</a>
+            <div class="nav-links">
+                <a href="/logout" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/admin/dashboard">Dashboard</a> / <a href="/admin/content">Instructional Content</a> / {{ 'Edit' if
+            content else 'Add' }}
+        </div>
+
+        <div class="form-container">
+            <header style="margin-bottom: 2.5rem;">
+                <h1>{{ 'Edit Content' if content else 'Add Content' }}</h1>
+                <p>Module: <span style="font-weight: 800; color: #000;">{{ topic.name }}</span></p>
+                <p style="margin-top: -10px;">Craft the instructional experience for this competency module.</p>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if category == 'error' %}
+            <div class="card"
+                style="padding: 1rem; margin-bottom: 1.5rem; border-left: 5px solid #d93025; background: #fce8e6;">
+                <span style="color: #d93025; font-weight: 500;">{{ message }}</span>
+            </div>
+            {% else %}
+            <div class="card"
+                style="padding: 1rem; margin-bottom: 1.5rem; border-left: 5px solid #4caf50; background: #e8f5e9;">
+                <span style="color: #2e7d32; font-weight: 500;">{{ message }}</span>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="card">
+
+                <div class="form-section">
+                    <div class="form-group">
+                        <label class="form-label">Hero Title</label>
+                        <input type="text" name="content_title" class="form-input"
+                            value="{{ content.content_title if content else '' }}" required
+                            placeholder="e.g. Master the logic of IF statements">
+                        <span class="helper-text">This is the main heading the student sees when they open the
+                            topic.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Explanation (Markdown)</label>
+                        <textarea name="explanation_md" class="form-input" rows="12" required
+                            placeholder="Write your curriculum here. Use Markdown for formatting.">{{ content.explanation_md if content else '' }}</textarea>
+                        <span class="helper-text">Full Markdown support including bold, italics, lists, and
+                            headers.</span>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-group">
+                        <label class="form-label">Demonstration Code</label>
+                        <textarea name="code_sample" class="form-input" rows="8"
+                            style="font-family: 'Courier New', monospace; background: #222; color: #fff; border-color: #000;"
+                            placeholder="# Enter code here...">{{ content.code_sample if content else '' }}</textarea>
+                        <span class="helper-text">Code will be displayed in a dedicated syntax-highlighted block.</span>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-group">
+                        <label class="form-label">YouTube Integration</label>
+                        <input type="url" name="youtube_url" class="form-input"
+                            value="{{ content.youtube_url if content else '' }}"
+                            placeholder="https://www.youtube.com/embed/XXXXXX">
+                        <span class="helper-text">Must be the <b>Embed</b> URL format for proper landing page
+                            integration.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">External Reference</label>
+                        <input type="url" name="reference_url" class="form-input"
+                            value="{{ content.reference_url if content else '' }}"
+                            placeholder="https://docs.python.org/...">
+                        <span class="helper-text">A link for "Further Reading" section.</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1.5rem; padding-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">
+                        {{ 'Publish Changes' if content else 'Save and Publish' }}
+                    </button>
+                    <a href="/admin/content" class="btn btn-secondary" style="flex: 1;">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

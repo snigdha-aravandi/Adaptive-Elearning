@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrity Dashboard - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .integrity-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+
+        .integrity-table th,
+        .integrity-table td {
+            text-align: left;
+            padding: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .integrity-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .status-ok {
+            color: #1e7e34;
+        }
+
+        .status-warn {
+            color: #b05a00;
+        }
+
+        .count-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .count-ok {
+            background: #e6f4ea;
+            color: #1e7e34;
+        }
+
+        .count-low {
+            background: #fef7e0;
+            color: #b05a00;
+            border: 1px solid #ffeeba;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin/dashboard" class="logo">AdminControl</a>
+            <div class="nav-links">
+                <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                <a href="/logout" class="btn btn-secondary">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Integrity Dashboard</h1>
+        <p>Monitor the health of the question bank. Every topic and difficulty level must maintain a minimum of 5 unique
+            questions to remain available to students.</p>
+
+        <table class="integrity-table">
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th>Easy</th>
+                    <th>Medium</th>
+                    <th>Hard</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in report %}
+                <tr>
+                    <td><strong>{{ row.name }}</strong></td>
+                    <td>
+                        <span class="count-badge {% if row.easy >= 5 %}count-ok{% else %}count-low{% endif %}">
+                            {{ row.easy }} / 5
+                        </span>
+                    </td>
+                    <td>
+                        <span class="count-badge {% if row.medium >= 5 %}count-ok{% else %}count-low{% endif %}">
+                            {{ row.medium }} / 5
+                        </span>
+                    </td>
+                    <td>
+                        <span class="count-badge {% if row.hard >= 5 %}count-ok{% else %}count-low{% endif %}">
+                            {{ row.hard }} / 5
+                        </span>
+                    </td>
+                    <td>
+                        {% if row.status == 'OK' %}
+                        <span class="indicator status-ok">✅ Healthy</span>
+                        {% else %}
+                        <span class="indicator status-warn">⚠️ Needs Attention</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="card" style="margin-top: 3rem; background: #e8f0fe; border: 1px solid #1a73e8;">
+            <p style="margin: 0; font-size: 0.9rem; color: #174ea6;">
+                <strong>Note to Admins:</strong> If a status shows "Needs Attention", students will be unable to start
+                quizzes for that specific difficulty level for the affected topic. Please use the <a
+                    href="/admin/questions">Question Manager</a> to expand the bank.
+            </p>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 5rem;"></div>
+</body>
+
+</html>

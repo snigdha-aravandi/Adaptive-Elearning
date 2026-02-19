@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Manager - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .filter-bar {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .stats-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-left: 4px solid var(--accent-color);
+            margin-bottom: 2rem;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-ok {
+            background: #e6f4ea;
+            color: #1e7e34;
+        }
+
+        .status-warning {
+            background: #fef7e0;
+            color: #b05a00;
+        }
+
+        .question-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .question-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .delete-btn:disabled {
+            background: #eee;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .add-form {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-full {
+            grid-column: span 2;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            resize: vertical;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin/dashboard" class="logo">AdminControl</a>
+            <div class="nav-links">
+                <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                <a href="/logout" class="btn btn-secondary">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Question Manager</h1>
+        <p>Manage the academic question bank. Integrity rules (min 5 per category) are strictly enforced.</p>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="flash-msg"
+            style="padding: 1rem; background: #fff3cd; border: 1px solid #ffeeba; margin-bottom: 1rem; border-radius: 4px;">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form action="/admin/questions" method="GET" class="filter-bar">
+            <div class="filter-group">
+                <label>Select Topic</label>
+                <select name="topic_id" required>
+                    <option value="">-- Choose Topic --</option>
+                    {% for t in topics %}
+                    <option value="{{ t.id }}" {% if selected_topic==t.id %}selected{% endif %}>{{ t.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Select Difficulty</label>
+                <select name="difficulty" required>
+                    <option value="">-- Choose Difficulty --</option>
+                    <option value="1" {% if selected_diff==1 %}selected{% endif %}>Easy</option>
+                    <option value="2" {% if selected_diff==2 %}selected{% endif %}>Medium</option>
+                    <option value="3" {% if selected_diff==3 %}selected{% endif %}>Hard</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+
+        {% if selected_topic and selected_diff %}
+        <div class="stats-banner">
+            <div>
+                <strong>Category Pool:</strong> {{ count }} Question{% if count != 1 %}s{% endif %}
+                <span class="status-badge {% if count > 5 %}status-ok{% else %}status-warning{% endif %}">
+                    {% if count > 5 %}Safe to Delete{% else %}Minimum Threshold Reacted{% endif %}
+                </span>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Required Minimum: 5</div>
+        </div>
+
+        <div class="question-list">
+            {% for q in questions %}
+            <div class="question-card">
+                <div class="question-meta">ID #{{ q.id }} | Type: {{ q.question_type|upper }}</div>
+                <div class="question-text"><strong>Q:</strong> {{ q.question }}</div>
+                <div class="answer" style="margin-top: 0.5rem; color: #1e7e34;"><strong>A:</strong> {{ q.correct_answer
+                    }}</div>
+
+                <form action="/admin/questions/delete/{{ q.id }}" method="POST"
+                    onsubmit="return confirm('Are you sure? This action is permanent.');">
+                    <button type="submit" class="delete-btn" {% if count <=5 %}disabled
+                        title="Cannot delete: Pool is at minimum (5)" {% endif %}>
+                        Delete
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="add-form">
+            <h3>Add New Question</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">The topic and difficulty are locked to your current
+                filter context.</p>
+            <form action="/admin/questions/add" method="POST">
+                <input type="hidden" name="topic_id" value="{{ selected_topic }}">
+                <input type="hidden" name="difficulty" value="{{ selected_diff }}">
+
+                <div class="form-grid">
+                    <div class="filter-group">
+                        <label>Question Type</label>
+                        <select name="question_type" required>
+                            <option value="mcq">MCQ (Multiple Choice)</option>
+                            <option value="code">Code Output / Logic</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Correct Answer</label>
+                        <input type="text" name="correct_answer" required placeholder="Exact string to match">
+                    </div>
+                    <div class="form-full">
+                        <label>Question Text</label>
+                        <textarea name="question" required
+                            placeholder="Enter the question or code snippet..."></textarea>
+                    </div>
+                    <div>
+                        <label>Option A (MCQ Only)</label>
+                        <input type="text" name="option_a">
+                    </div>
+                    <div>
+                        <label>Option B (MCQ Only)</label>
+                        <input type="text" name="option_b">
+                    </div>
+                    <div>
+                        <label>Option C (MCQ Only)</label>
+                        <input type="text" name="option_c">
+                    </div>
+                    <div>
+                        <label>Option D (MCQ Only)</label>
+                        <input type="text" name="option_d">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 2rem; width: 100%;">Add Question to
+                    Pool</button>
+            </form>
+        </div>
+        {% else %}
+        <div
+            style="text-align: center; padding: 4rem; color: var(--text-secondary); border: 2px dashed var(--border-color); border-radius: 8px;">
+            Select a Topic and Difficulty above to manage questions.
+        </div>
+        {% endif %}
+    </div>
+
+    <div style="margin-bottom: 5rem;"></div>
+</body>
+
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Manager - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .content-editor {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+
+        .topic-selector {
+            margin-bottom: 2rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 400px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .helper-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/admin/dashboard" class="logo">AdminControl</a>
+            <div class="nav-links">
+                <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                <a href="/logout" class="btn btn-secondary">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Content Manager</h1>
+        <p>Edit the learning materials and explanatory text for students. Keep the tone academic and clear.</p>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="flash-msg"
+            style="padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; color: #155724; margin-bottom: 1rem; border-radius: 4px;">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="topic-selector card" style="padding: 1.5rem;">
+            <form action="/admin/content" method="GET" style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label>Select Topic to Edit</label>
+                    <select name="topic_id" required onchange="this.form.submit()">
+                        <option value="">-- Choose Topic --</option>
+                        {% for t in topics %}
+                        <option value="{{ t.id }}" {% if selected_topic and selected_topic.id==t.id %}selected{% endif
+                            %}>{{ t.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Load Content</button>
+            </form>
+        </div>
+
+        {% if selected_topic %}
+        <div class="content-editor">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0;">Editing: {{ selected_topic.name }}</h3>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Last updated: Just now</div>
+            </div>
+
+            <form action="/admin/content/save" method="POST">
+                <input type="hidden" name="topic_id" value="{{ selected_topic.id }}">
+                <div class="helper-text">
+                    Use clear formatting and section headers for better readability. Standard HTML tags are permitted.
+                </div>
+                <textarea name="content" required
+                    placeholder="Enter topic content here...">{{ selected_topic.content }}</textarea>
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2rem;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div
+            style="text-align: center; padding: 4rem; color: var(--text-secondary); border: 2px dashed var(--border-color); border-radius: 8px;">
+            Select a Topic above to begin editing learning materials.
+        </div>
+        {% endif %}
+    </div>
+
+    <div style="margin-bottom: 5rem;"></div>
+</body>
+
+</html>
